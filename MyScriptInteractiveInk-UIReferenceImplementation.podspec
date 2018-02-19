@@ -30,7 +30,7 @@ Visit https://developer.myscript.com/ to create your MyScript Developer account 
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
   s.author           = { 'MyScript' => 'dev.support@myscript.com' }
-  s.source           = { :git => 'https://github.com/MyScript/interactive-ink-examples-ios', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/Donato-yi/interactive-ink-examples-ios', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '9.1'
