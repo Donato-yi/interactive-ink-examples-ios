@@ -21,14 +21,6 @@ typedef NS_ENUM(NSUInteger, UpdateCause)
     UpdateCauseView
 };
 
-typedef NS_ENUM(NSUInteger, TextBlockStyle)
-{
-    TextBlockStyleH1,
-    TextBlockStyleH2,
-    TextBlockStyleH3,
-    TextBlockStyleNormal
-};
-
 
 // -- SmartGuideWord -----------------------------------------------------------
 
@@ -137,11 +129,8 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
 
 @interface SmartGuideViewController () <IINKEditorDelegate, IINKRendererDelegate, SmartGuideWordViewDelegate>
 
-@property (strong, nonatomic) UIButton *styleButton;
 @property (strong, nonatomic) UIScrollView *wordScrollView;
 @property (strong, nonatomic) UIStackView *wordStackView;
-@property (strong, nonatomic) UIButton *moreButton;
-@property (strong, nonatomic) UIView *rulerView;
 
 @property (nonatomic) BOOL didSetConstraints;
 @property (strong, nonatomic) NSLayoutConstraint *leftConstraint;
@@ -166,10 +155,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
     self.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.view.hidden = YES;
 
-    self.styleButton = [[UIButton alloc] init];
-    self.styleButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.styleButton];
-
     self.wordScrollView = [[UIScrollView alloc] init];
     self.wordScrollView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.wordScrollView];
@@ -180,20 +165,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
     self.wordStackView.layoutMarginsRelativeArrangement = YES;
     self.wordStackView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.wordScrollView addSubview:self.wordStackView];
-
-    self.moreButton = [[UIButton alloc] init];
-    [self.moreButton setTitle:@"•••" forState:UIControlStateNormal];
-    [self.moreButton setTitleColor:CONTROL_GRAY_COLOR forState:UIControlStateNormal];
-    self.moreButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.moreButton];
-
-    self.rulerView = [[UIView alloc] init];
-    self.rulerView.userInteractionEnabled = NO;
-    self.rulerView.backgroundColor = CONTROL_GRAY_COLOR;
-    self.rulerView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.rulerView];
-
-    [self.moreButton addTarget:self action:@selector(moreButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
 }
 
 #pragma mark - Constraints
@@ -203,14 +174,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
     if (!self.didSetConstraints)
     {
         self.didSetConstraints = YES;
-
-        NSDictionary *views = @{@"styleButton": self.styleButton, @"wordScrollView": self.wordScrollView, @"moreButton": self.moreButton, @"rulerView": self.rulerView};
-
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[styleButton][wordScrollView][moreButton]|" options:0 metrics:nil views:views]];
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[styleButton][rulerView]|" options:0 metrics:nil views:views]];
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[styleButton]|" options:0 metrics:nil views:views]];
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[wordScrollView][rulerView(1)]|" options:0 metrics:nil views:views]];
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[moreButton]|" options:0 metrics:nil views:views]];
 
         self.leftConstraint = [self.view.leftAnchor constraintEqualToAnchor:self.view.superview.leftAnchor constant:0];
         self.topConstraint = [self.view.topAnchor constraintEqualToAnchor:self.view.superview.topAnchor constant:0];
@@ -236,42 +199,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
 
     [self.editor addDelegate:self];
     [self.editor.renderer addDelegate:self];
-}
-
-- (void)setTextBlockStyle:(TextBlockStyle)textBlockStyle
-{
-    switch (textBlockStyle)
-    {
-        case TextBlockStyleH1:
-            [self.styleButton setTitle:@"H1" forState:UIControlStateNormal];
-            [self.styleButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-            [self.styleButton setBackgroundColor:[UIColor blackColor]];
-            self.styleButton.layer.borderWidth = 0.f;
-            break;
-
-        case TextBlockStyleH2:
-            [self.styleButton setTitle:@"H2" forState:UIControlStateNormal];
-            [self.styleButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-            [self.styleButton setBackgroundColor:CONTROL_GRAY_COLOR];
-            self.styleButton.layer.borderWidth = 0.f;
-            break;
-
-        case TextBlockStyleH3:
-            [self.styleButton setTitle:@"H3" forState:UIControlStateNormal];
-            [self.styleButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-            [self.styleButton setBackgroundColor:CONTROL_GRAY_COLOR];
-            self.styleButton.layer.borderWidth = 0.f;
-            break;
-
-        case TextBlockStyleNormal:
-        default:
-            [self.styleButton setTitle:@"¶" forState:UIControlStateNormal];
-            [self.styleButton setTitleColor:CONTROL_GRAY_COLOR forState:UIControlStateNormal];
-            [self.styleButton setBackgroundColor:[UIColor whiteColor]];
-            self.styleButton.layer.borderWidth = 1.f;
-            self.styleButton.layer.borderColor = CONTROL_GRAY_COLOR.CGColor;
-            break;
-    }
 }
 
 - (void)computeModificationOfWords:(NSArray<SmartGuideWord *> *)words againstWords:(NSArray<SmartGuideWord *> *)oldWords
@@ -398,7 +325,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
                 [words enumerateObjectsUsingBlock:^(SmartGuideWord * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) { obj.modified = YES; }];
         }
 
-        TextBlockStyle textBlockStyle = TextBlockStyleNormal;
         BOOL updateWords = words != self.words;
         BOOL isInDiagram = [block.identifier hasPrefix:@"diagram/"];
 
@@ -406,7 +332,6 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
             self.leftConstraint.constant = x;
             self.topConstraint.constant = y - self.view.frame.size.height;
             self.widthConstraint.constant = width;
-            [self setTextBlockStyle:textBlockStyle];
             if (updateWords)
             {
                 SmartGuideWordView *lastModifiedWordView = nil;
@@ -582,7 +507,7 @@ typedef NS_ENUM(NSUInteger, TextBlockStyle)
         blockId:(nonnull NSString*)blockId
         message:(nonnull NSString*)message
 {
-
+    NSLog(@"%@, %@", blockId, message);
 }
 
 - (void)viewTransformChanged:(IINKRenderer *)renderer
